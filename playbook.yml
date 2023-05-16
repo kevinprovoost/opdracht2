@@ -1,0 +1,13 @@
+---
+- name: Install HomeAssistant
+  hosts: websrv
+  become: yes
+
+  tasks:
+    - name: Install required packages
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - docker.io
+        - nginx

@@ -9,7 +9,7 @@
   become: yes
 
   tasks:
-    - name: Install required packages
+    - name: Install nginx and pip packages
       apt:
         name: "{{ item }}"
         state: present
@@ -22,7 +22,7 @@
         path: /home/kevin/haconfig
         state: directory
 
-    - name: Install pip packages
+    - name: Install pyopenssl and docker-py packages with pip
       pip:
         name: "{{ item }}"
         state: present
@@ -64,15 +64,11 @@
         network_mode: host
         detach: yes
 
-    - name: Create Nginx server block configuration file
-      file:
-        path: /etc/nginx/sites-available/homeassistant
-        state: touch
-
     - name: Edit Nginx server block configuration
       blockinfile:
         path: /etc/nginx/sites-available/homeassistant
-        marker: ""
+        create: true
+        marker: "# {mark} ANSIBLE BLOCK CONFIG"
         block: |
           server {
               listen 443 ssl;
@@ -98,6 +94,22 @@
         dest: /etc/nginx/sites-enabled/homeassistant
         state: link
         force: yes
+
+    - name: Add http configuration block to configuration.yaml
+      blockinfile:
+        path: /home/kevin/haconfig/configuration.yaml
+        marker: "# {mark} ANSIBLE BLOCK CONFIG"
+        insertafter: EOF
+        block: |
+          http:
+            use_x_forwarded_for: true
+            trusted_proxies:
+              - 10.10.10.5
+      notify:
+        - Restart Nginx
+
+    - name: Restart Home Assistant
+      command: docker restart homeassistant
 
   handlers:
     - name: Restart Nginx

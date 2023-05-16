@@ -1,6 +1,11 @@
 ---
 - name: Install HomeAssistant
   hosts: websrv
+  vars:
+    server_hostname: websrv.com
+    key_size: 2048
+    key_type: RSA
+    country_name: BE
   become: yes
 
   tasks:
@@ -11,3 +16,35 @@
       loop:
         - docker.io
         - nginx
+        - python3-pip
+
+    - name: Creates haconfig directory
+      file:
+        path: /home/kevin/haconfig
+        state: directory
+
+    - name: Install PyOpenSSL package
+      pip:
+        name: pyopenssl
+        state: present
+
+    - name: Generate an OpenSSL private key
+      openssl_privatekey:
+        path: "/home/kevin/haconfig/{{ server_hostname }}_privkey.pem"
+        size: "{{ key_size }}"
+        type: "{{ key_type }}"
+        backup: yes
+
+    - name: Generate an OpenSSL Certificate Signing Request with Subject information
+      openssl_csr:
+        path: "/home/kevin/haconfig/{{ server_hostname }}.csr"
+        privatekey_path: "/home/kevin/haconfig/{{ server_hostname }}_privkey.pem"
+        country_name: "{{ country_name }}"
+        common_name: "{{ server_hostname }}"
+
+    - name: Generate a Self Signed OpenSSL certificate
+      openssl_certificate:
+        path: "/home/kevin/haconfig/{{ server_hostname }}_cert.pem"
+        privatekey_path: "/home/kevin/haconfig/{{ server_hostname }}_privkey.pem"
+        csr_path: "/home/kevin/haconfig/{{ server_hostname }}.csr"
+        provider: selfsigned

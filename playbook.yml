@@ -14,7 +14,6 @@
         name: "{{ item }}"
         state: present
       loop:
-        - docker.io
         - nginx
         - python3-pip
 
@@ -23,10 +22,13 @@
         path: /home/kevin/haconfig
         state: directory
 
-    - name: Install PyOpenSSL package
+    - name: Install pip packages
       pip:
-        name: pyopenssl
+        name: "{{ item }}"
         state: present
+      loop:
+        - pyopenssl
+        - docker-py
 
     - name: Generate an OpenSSL private key
       openssl_privatekey:
@@ -49,6 +51,18 @@
         csr_path: "/home/kevin/haconfig/{{ server_hostname }}.csr"
         provider: selfsigned
 
+    - name: Run Home Assistant container
+      docker_container:
+        name: homeassistant
+        image: ghcr.io/home-assistant/home-assistant:stable
+        privileged: yes
+        restart_policy: unless-stopped
+        env:
+          TZ: Europe/Brussels
+        volumes:
+          - "/home/kevin/haconfig:/config"
+        network_mode: host
+        detach: yes
 
     - name: Create Nginx server block configuration file
       file:

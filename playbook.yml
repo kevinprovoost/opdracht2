@@ -78,6 +78,13 @@
       notify:
         - Restart Nginx
 
+    - name: Create Nginx server block symbolic link
+      file:
+        src: /etc/nginx/sites-available/homeassistant
+        dest: /etc/nginx/sites-enabled/homeassistant
+        state: link
+        force: yes
+
   handlers:
     - name: Restart Nginx
       service:

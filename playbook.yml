@@ -48,3 +48,38 @@
         privatekey_path: "/home/kevin/haconfig/{{ server_hostname }}_privkey.pem"
         csr_path: "/home/kevin/haconfig/{{ server_hostname }}.csr"
         provider: selfsigned
+
+
+    - name: Create Nginx server block configuration file
+      file:
+        path: /etc/nginx/sites-available/homeassistant
+        state: touch
+
+    - name: Edit Nginx server block configuration
+      blockinfile:
+        path: /etc/nginx/sites-available/homeassistant
+        marker: ""
+        block: |
+          server {
+              listen 443 ssl;
+              server_name websrv.com;
+
+              ssl_certificate /home/kevin/haconfig/websrv.com_cert.pem;
+              ssl_certificate_key /home/kevin/haconfig/websrv.com_privkey.pem;
+
+              location / {
+                  proxy_pass http://10.10.10.5:8123/;
+                  proxy_set_header Host $host;
+                  proxy_set_header X-Real-IP $remote_addr;
+                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                  proxy_set_header X-Forwarded-Proto $scheme;
+              }
+          }
+      notify:
+        - Restart Nginx
+
+  handlers:
+    - name: Restart Nginx
+      service:
+        name: nginx
+        state: restarted

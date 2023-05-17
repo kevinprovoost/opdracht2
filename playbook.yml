@@ -107,6 +107,13 @@
         state: link
         force: yes
 
+    - name: Wait for configuration.yaml to exist
+      wait_for:
+        path: /home/kevin/haconfig/configuration.yaml
+        state: present
+        delay: 5
+        timeout: 15
+
     - name: Add http configuration block to configuration.yaml
       blockinfile:
         path: /home/kevin/haconfig/configuration.yaml

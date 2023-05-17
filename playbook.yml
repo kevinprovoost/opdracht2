@@ -1,5 +1,5 @@
 ---
-- name: Install HomeAssistant
+- name: Install Home Assistant
   hosts: websrv
   vars:
     server_hostname: websrv.com
@@ -18,7 +18,7 @@
         - nginx
         - python3-pip
 
-    - name: Creates haconfig directory
+    - name: Create haconfig directory
       ansible.builtin.file:
         path: /home/kevin/haconfig
         state: directory
@@ -111,7 +111,7 @@
       ansible.builtin.wait_for:
         path: /home/kevin/haconfig/configuration.yaml
         state: present
-        delay: 5
+        delay: 3
         timeout: 15
 
     - name: Add http configuration block to configuration.yaml
@@ -129,6 +129,25 @@
 
     - name: Restart Home Assistant
       ansible.builtin.command: docker restart homeassistant
+
+    - name: Pause before checking the website so HA is started
+      pause:
+        seconds: 3
+
+    - name: Check website
+      uri:
+        url: https://websrv.com
+        validate_certs: false
+        follow_redirects: all
+      register: result
+
+    - name: Print result
+      debug:
+        msg: |
+          Status Code: {{ result.status }}
+          Redirected: {{ result.redirected }}
+          Server: {{ result.server }}
+          URL: {{ result.url }}
 
   handlers:
     - name: Restart Nginx

@@ -66,7 +66,7 @@
     - name: Run Home Assistant container
       community.docker.docker_container:
         name: homeassistant
-        image: "ghcr.io/home-assistant/home-assistant:stable"
+        image: ghcr.io/home-assistant/home-assistant:stable
         privileged: yes
         restart_policy: unless-stopped
         env:
@@ -93,6 +93,8 @@
                   proxy_pass http://10.10.10.5:8123/;
                   proxy_set_header Host $host;
                   proxy_set_header X-Real-IP $remote_addr;
+                  proxy_set_header Upgrade $http_upgrade;
+                  proxy_set_header Connection "upgrade";
                   proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
                   proxy_set_header X-Forwarded-Proto $scheme;
               }
@@ -124,15 +126,18 @@
             use_x_forwarded_for: true
             trusted_proxies:
               - 10.10.10.5
-      notify:
-        - Restart Nginx
+
+    - name: Restart Nginx
+      service:
+        name: nginx
+        state: restarted
 
     - name: Restart Home Assistant
       ansible.builtin.command: docker restart homeassistant
 
-    - name: Pause before checking the website so HA is started
+    - name: 10 seconds pause before checking the website so HA is started
       pause:
-        seconds: 3
+        seconds: 10
 
     - name: Check website
       uri:

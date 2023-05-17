@@ -10,7 +10,7 @@
 
   tasks:
     - name: Install nginx and pip packages
-      apt:
+      ansible.builtin.apt:
         name: "{{ item }}"
         state: present
       loop:
@@ -19,12 +19,12 @@
         - python3-pip
 
     - name: Creates haconfig directory
-      file:
+      ansible.builtin.file:
         path: /home/kevin/haconfig
         state: directory
 
     - name: Install pyopenssl and docker-py packages with pip
-      pip:
+      ansible.builtin.pip:
         name: "{{ item }}"
         state: present
       loop:
@@ -32,39 +32,39 @@
         - docker-py
 
     - name: Generate an OpenSSL private key
-      openssl_privatekey:
+      community.crypto.openssl_privatekey:
         path: "/home/kevin/haconfig/{{ server_hostname }}_privkey.pem"
         size: "{{ key_size }}"
         type: "{{ key_type }}"
         backup: yes
 
     - name: Generate an OpenSSL Certificate Signing Request with Subject information
-      openssl_csr:
+      community.crypto.openssl_csr:
         path: "/home/kevin/haconfig/{{ server_hostname }}.csr"
         privatekey_path: "/home/kevin/haconfig/{{ server_hostname }}_privkey.pem"
         country_name: "{{ country_name }}"
         common_name: "{{ server_hostname }}"
 
     - name: Generate a Self Signed OpenSSL certificate
-      openssl_certificate:
+      community.crypto.openssl_certificate:
         path: "/home/kevin/haconfig/{{ server_hostname }}_cert.pem"
         privatekey_path: "/home/kevin/haconfig/{{ server_hostname }}_privkey.pem"
         csr_path: "/home/kevin/haconfig/{{ server_hostname }}.csr"
         provider: selfsigned
 
     - name: Create Docker group
-      group:
+      ansible.builtin.group:
         name: docker
         state: present
 
     - name: Add user to Docker group
-      user:
+      ansible.builtin.user:
         name: kevin
         groups: docker
         append: yes
 
     - name: Run Home Assistant container
-      docker_container:
+      community.docker.docker_container:
         name: homeassistant
         image: "ghcr.io/home-assistant/home-assistant:stable"
         privileged: yes
@@ -77,7 +77,7 @@
         detach: yes
 
     - name: Edit Nginx server block configuration
-      blockinfile:
+      ansible.builtin.blockinfile:
         path: /etc/nginx/sites-available/homeassistant
         create: true
         marker: "# {mark} ANSIBLE BLOCK CONFIG"
@@ -101,21 +101,21 @@
         - Restart Nginx
 
     - name: Create Nginx server block symbolic link
-      file:
+      ansible.builtin.file:
         src: /etc/nginx/sites-available/homeassistant
         dest: /etc/nginx/sites-enabled/homeassistant
         state: link
         force: yes
 
     - name: Wait for configuration.yaml to exist
-      wait_for:
+      ansible.builtin.wait_for:
         path: /home/kevin/haconfig/configuration.yaml
         state: present
         delay: 5
         timeout: 15
 
     - name: Add http configuration block to configuration.yaml
-      blockinfile:
+      ansible.builtin.blockinfile:
         path: /home/kevin/haconfig/configuration.yaml
         marker: "# {mark} ANSIBLE BLOCK CONFIG"
         insertafter: EOF
@@ -128,10 +128,10 @@
         - Restart Nginx
 
     - name: Restart Home Assistant
-      command: docker restart homeassistant
+      ansible.builtin.command: docker restart homeassistant
 
   handlers:
     - name: Restart Nginx
-      service:
+      ansible.builtin.service:
         name: nginx
         state: restarted

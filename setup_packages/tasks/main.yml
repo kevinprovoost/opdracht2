@@ -1,0 +1,27 @@
+- name: Install nginx and pip packages
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ package_list }}"
+
+- name: Create haconfig directory
+  ansible.builtin.file:
+    path: /home/kevin/haconfig
+    state: directory
+
+- name: Install pyopenssl and docker-py packages with pip
+  ansible.builtin.pip:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ pip_packages }}"
+
+- name: Create Docker group
+  ansible.builtin.group:
+    name: docker
+    state: present
+
+- name: Add user to Docker group
+  ansible.builtin.user:
+    name: kevin
+    groups: docker
+    append: yes

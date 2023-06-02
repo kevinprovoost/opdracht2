@@ -1,0 +1,33 @@
+- name: Generate an OpenSSL private key
+  community.crypto.openssl_privatekey:
+    path: "/home/kevin/haconfig/{{ server_hostname }}_privkey.pem"
+    size: "{{ key_size }}"
+    type: "{{ key_type }}"
+    backup: yes
+
+- name: Generate an OpenSSL Certificate Signing Request with Subject information
+  community.crypto.openssl_csr:
+    path: "/home/kevin/haconfig/{{ server_hostname }}.csr"
+    privatekey_path: "/home/kevin/haconfig/{{ server_hostname }}_privkey.pem"
+    country_name: "{{ country_name }}"
+    common_name: "{{ server_hostname }}"
+
+- name: Generate a Self Signed OpenSSL certificate
+  community.crypto.openssl_certificate:
+    path: "/home/kevin/haconfig/{{ server_hostname }}_cert.pem"
+    privatekey_path: "/home/kevin/haconfig/{{ server_hostname }}_privkey.pem"
+    csr_path: "/home/kevin/haconfig/{{ server_hostname }}.csr"
+    provider: selfsigned
+
+- name: Run Home Assistant container
+  community.docker.docker_container:
+    name: homeassistant
+    image: ghcr.io/home-assistant/home-assistant:stable
+    privileged: yes
+    restart_policy: unless-stopped
+    env:
+      TZ: Europe/Brussels
+    volumes:
+      - "/home/kevin/haconfig:/config"
+    network_mode: host
+    detach: yes

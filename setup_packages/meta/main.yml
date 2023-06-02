@@ -1,0 +1,18 @@
+---
+galaxy_info:
+  author: Kevin Provoost
+  description: Setup for necessary packages and system prep for Home Assistant and Nginx
+  company: Howest
+  license: Free
+  min_ansible_version: "2.9"
+  platforms:
+  - name: Debian
+    versions:
+    - all
+  galaxy_tags:
+    - homeassistant
+    - nginx
+    - setup
+    - packages
+    - docker
+dependencies: []

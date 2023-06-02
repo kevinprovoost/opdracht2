@@ -1,0 +1,17 @@
+---
+galaxy_info:
+  author: Kevin Provoost
+  description: Configuration for SSL and Home Assistant setup
+  company: Howest
+  license: Free
+  min_ansible_version: "2.9"
+  platforms:
+  - name: Debian
+    versions:
+    - all
+  galaxy_tags:
+    - homeassistant
+    - ssl
+    - configuration
+    - docker
+dependencies: []

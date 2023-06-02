@@ -1,0 +1,8 @@
+package_list:
+  - docker.io
+  - nginx
+  - python3-pip
+
+pip_packages:
+  - pyopenssl
+  - docker-py

@@ -1,0 +1,6 @@
+# handlers file for configure_nginx_and_ha
+---
+- name: Restart Nginx
+  ansible.builtin.service:
+    name: nginx
+    state: restarted

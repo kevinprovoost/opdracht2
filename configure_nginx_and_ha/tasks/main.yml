@@ -1,0 +1,78 @@
+# tasks file for configure_nginx_and_ha
+- name: Edit Nginx server block configuration
+  ansible.builtin.blockinfile:
+    path: /etc/nginx/sites-available/homeassistant
+    create: true
+    marker: "# {mark} ANSIBLE BLOCK CONFIG"
+    block: |
+      server {
+          listen 443 ssl;
+          server_name websrv.com;
+
+          ssl_certificate /home/kevin/haconfig/websrv.com_cert.pem;
+          ssl_certificate_key /home/kevin/haconfig/websrv.com_privkey.pem;
+
+          location / {
+              proxy_pass http://10.10.10.5:8123/;
+              proxy_set_header Host $host;
+              proxy_set_header X-Real-IP $remote_addr;
+              proxy_set_header Upgrade $http_upgrade;
+              proxy_set_header Connection "upgrade";
+              proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+              proxy_set_header X-Forwarded-Proto $scheme;
+          }
+      }
+  notify:
+    - Restart Nginx
+
+- name: Create Nginx server block symbolic link
+  ansible.builtin.file:
+    src: /etc/nginx/sites-available/homeassistant
+    dest: /etc/nginx/sites-enabled/homeassistant
+    state: link
+    force: yes
+
+- name: Wait for configuration.yaml to exist
+  ansible.builtin.wait_for:
+    path: /home/kevin/haconfig/configuration.yaml
+    state: present
+    delay: 3
+    timeout: 15
+
+- name: Add http configuration block to configuration.yaml
+  ansible.builtin.blockinfile:
+    path: /home/kevin/haconfig/configuration.yaml
+    marker: "# {mark} ANSIBLE BLOCK CONFIG"
+    insertafter: EOF
+    block: |
+      http:
+        use_x_forwarded_for: true
+        trusted_proxies:
+          - 10.10.10.5
+
+- name: Restart Nginx
+  service:
+    name: nginx
+    state: restarted
+
+- name: Restart Home Assistant
+  ansible.builtin.command: docker restart homeassistant
+
+- name: 10 seconds pause before checking the website so HA is started
+  pause:
+    seconds: 10
+
+- name: Check website
+  uri:
+    url: https://websrv.com
+    validate_certs: false
+    follow_redirects: all
+  register: result
+
+- name: Print result
+  debug:
+    msg: |
+      Status Code: {{ result.status }}
+      Redirected: {{ result.redirected }}
+      Server: {{ result.server }}
+      URL: {{ result.url }}

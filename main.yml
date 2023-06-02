@@ -1,0 +1,9 @@
+---
+- hosts: websrv
+  vars:
+    server_hostname: websrv.com
+  become: yes
+  roles:
+    - role: setup_packages
+    - role: configure_ssl_and_ha
+    - role: configure_nginx_and_ha

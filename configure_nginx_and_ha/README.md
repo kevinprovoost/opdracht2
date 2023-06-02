@@ -1,38 +1,52 @@
-Role Name
+# Ansible Role: configure_nginx_and_ha
 =========
 
-A brief description of the role goes here.
+This Ansible role configures Nginx as a reverse proxy for Home Assistant running in a Docker container.
 
-Requirements
+## Requirements
 ------------
 
-Any pre-requisites that may not be covered by Ansible itself or the role should be mentioned here. For instance, if the role uses the EC2 module, it may be a good idea to mention in this section that the boto package is required.
+None.
 
-Role Variables
+## Role Variables
 --------------
 
-A description of the settable variables for this role should go here, including any variables that are in defaults/main.yml, vars/main.yml, and any variables that can/should be set via parameters to the role. Any variables that are read from other roles and/or the global scope (ie. hostvars, group vars, etc.) should be mentioned here as well.
+Server hostname is defined in the main playbook.
 
-Dependencies
+## Dependencies
 ------------
 
-A list of other roles hosted on Galaxy should go here, plus any details in regards to parameters that may need to be set for other roles, or variables that are used from other roles.
+This role needs to be ran after the `setup_packages` and `generate_ssl_cert_and_run_ha` roles, in that order.
 
-Example Playbook
+## Example Playbook
 ----------------
 
-Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
+This role uses the following variables, defined in the playbook directory in `main.yml`:
 
-    - hosts: servers
-      roles:
-         - { role: username.rolename, x: 42 }
+```yml
+- hosts: servers
+  roles:
+     - { role: username.configure_nginx_and_ha }
+```
 
-License
+## License
 -------
 
-BSD
+This project is licensed under the MIT License.
 
-Author Information
+## Author Information
+----------------------
+
+This role was created in 2023 by [Kevin Provoost](mailto:kevin.provoost@student.howest.be).
+
+## Tasks Included
 ------------------
-
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+- Configure Nginx server block
+- Create Nginx server block symbolic link
+- Wait for Home Assistant `configuration.yaml` to exist
+- Add http configuration block to `configuration.yaml`
+- Restart Nginx
+- Restart Home Assistant Docker container
+- Pause for 10 seconds
+- Check website
+- Print result

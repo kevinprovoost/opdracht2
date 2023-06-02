@@ -3,7 +3,7 @@ galaxy_info:
   author: Kevin Provoost
   description: Configuration for Nginx and Home Assistant setup
   company: Howest
-  license: Free
+  license: BSD
   min_ansible_version: "2.9"
   platforms:
   - name: Debian

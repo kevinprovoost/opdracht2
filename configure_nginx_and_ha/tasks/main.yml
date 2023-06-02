@@ -50,10 +50,8 @@
         trusted_proxies:
           - 10.10.10.5
 
-- name: Restart Nginx
-  service:
-    name: nginx
-    state: restarted
+- name: flush handlers
+  meta: flush_handlers
 
 - name: Restart Home Assistant
   ansible.builtin.command: docker restart homeassistant

@@ -31,13 +31,15 @@ This playbook uses the following variable:
 server_hostname: websrv.com
 ```
 
+Change this address to your linux node.
+
 ## Example Playbook Execution
 
 To run this playbook, use the following command:
 
-\```bash
+```bash
 ansible-playbook main.yml -K
-\```
+```
 After this command, enter your sudo password for the nodes.
 
 Make sure to replace `inventory.ini` in the directory to your actual inventory file.

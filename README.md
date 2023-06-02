@@ -50,4 +50,4 @@ This project is licensed under the MIT License.
 
 ## Author Information
 
-This role was created in 2023 by [Kevin Provoost](mailto:kevin.provoost@student.howest.be).
+This playbook was created in 2023 by [Kevin Provoost](mailto:kevin.provoost@student.howest.be).
